@@ -1,0 +1,8 @@
+[virtualmachines:vars]
+ansible_user=username
+ansible_password='SuperSecretPassword'
+ansible_become_user=root
+ansible_become_pass='SuperSecretPassword'
+
+[virtualmachines]
+MyShinyVM ansible_host=192.168.2.23

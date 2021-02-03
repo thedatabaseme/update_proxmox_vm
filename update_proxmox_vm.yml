@@ -1,0 +1,43 @@
+---
+
+- hosts: "localhost"
+  vars:
+    proxmox_api_host: "pvehost1"
+    proxmox_api_user: "root@pam"
+    proxmox_api_password: "SuperSecretPassword"
+    vm_list:
+      - MyShinyVM
+
+  tasks:
+
+  - name: Logon to Proxmox Server
+    uri:
+      method: POST
+      validate_certs: no
+      return_content: yes
+      url: "https://{{ proxmox_api_host }}:8006/api2/json/access/ticket"
+      body_format: json
+      body:
+        username: "{{ proxmox_api_user }}"
+        password: "{{ proxmox_api_password }}"
+    register: proxmox_session
+    become: false
+
+  - name: parse cookie data
+    set_fact:
+      proxmox_api_cookie:
+        Cookie: "PVEAuthCookie={{ proxmox_session.json.data.ticket }}"
+        CSRFPreventionToken: "{{ proxmox_session.json.data.CSRFPreventionToken }}"
+    no_log: true
+
+  - name: get information about all vms in the cluster
+    uri:
+      method: GET
+      validate_certs: no
+      url: "https://{{ proxmox_api_host }}:8006/api2/json/cluster/resources?type=vm"
+      headers: "{{ proxmox_api_cookie }}"
+    register: proxmox_cluster_information
+
+  - name: Patch VM
+    include_tasks: patch_vm.yml
+    loop: "{{ vm_list }}"
