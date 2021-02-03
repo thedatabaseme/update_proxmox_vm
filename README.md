@@ -24,6 +24,7 @@ All VMs you want to patch in this process must be found in the Inventory you men
 All VMs in your list will be patched one after another.
 
 Attention: At the moment, when you run multiple Proxmox Cluster Nodes, all Nodes must be up and running. Else there will be an error when getting the VM Status because the Name of the VM is not resolveable.
+Attention: At the moment, only OS will work which are running apt as a package manager.
 
 Example Playbook
 ----------------
