@@ -47,5 +47,5 @@
     headers: "{{ proxmox_api_cookie }}"
     body_format: form-urlencoded
     body:
-      forceStop: true
+      forceStop: 1
   when: vm_status.json.data.status == 'stopped'
