@@ -30,7 +30,12 @@
     seconds: 300
   when: vm_status.json.data.status == 'stopped'
 
-- name: Update VM {{ item }}
+- name: Gather VM Facts
+  gather_facts:
+  register: vm_facts
+  delegate_to: "{{ item }}"
+
+- name: Update VM {{ item }} with apt
   apt:
     force_apt_get: yes
     name: "*"
@@ -38,6 +43,16 @@
     update_cache: yes
   become: yes
   delegate_to: "{{ item }}"
+  when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
+
+- name: Update VM {{ item }} with yum
+  yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+  become: yes
+  delegate_to: "{{ item }}"
+  when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'
 
 - name: Shutdown VM {{ item }} when it was stopped before patching
   uri:
