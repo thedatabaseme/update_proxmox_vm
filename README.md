@@ -33,7 +33,7 @@ There is an example Playbook included update_proxmox_vm.yml
 
 An example Playbook Call looks like this. Ofcourse you may want to specify the Variables within your Playbook or within your Inventory:
 
-    - ansible-playbook -i hosts_example update_proxmox_vm.yml  
+    - ansible-playbook -i hosts_example -e '{"vm_list": ["vm1", "vm2"], "proxmox_api_host": "srvoffice2.home.lab", "proxmox_api_password": "Evenmoresecret"}' update_proxmox_vm.yml  
 
 Author Information
 ------------------
