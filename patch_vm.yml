@@ -2,8 +2,6 @@
 
 - name: Extract Node and VM ID for VM {{ item }}
   set_fact:
-#    vm_id: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item) | map(attribute='vmid') | first }}"
-#    vm_node: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item) | map(attribute='node') | first }}"
     vm_id: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item) | map(attribute='vmid') | first }}"
     vm_node: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item) | map(attribute='node') | first }}"
 
@@ -16,10 +14,7 @@
     headers: "{{ proxmox_api_cookie }}"
   register: vm_status
 
-- debug:
-    msg: "{{ vm_status }}"
-
-- name: Start VM
+- name: Start VM {{ item }}
   uri:
     method: POST
     validate_certs: no
