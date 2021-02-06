@@ -22,12 +22,12 @@
     headers: "{{ proxmox_api_cookie }}"
     body_format: form-urlencoded
     body:
-      timeout: 300
+      timeout: "{{ boot_time }}"
   when: vm_status.json.data.status == 'stopped'
 
 - name: Waiting for the VM to boot up
   pause: 
-    seconds: 300
+    seconds: "{{ boot_time }}"
   when: vm_status.json.data.status == 'stopped'
 
 - name: Gather VM Facts
