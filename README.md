@@ -14,6 +14,8 @@ Playbook Variables
 - proxmox_api_user (Default root@pam): Proxmox API Username
 - proxmox_api_password (Default Start123): Password of the API User
 - proxmox_api_host (Default pvehost1): Hostname of the Proxmox Server
+- proxmox_api_port: (Default 8006): Proxmox API Port (normally 8006)
+- boot_time: (Default 180): Sleep Time for VM to boot
 - vm_list: A List of VMs you want to patch. (Must be the same Name than in the Inventory File)
 
 More Informations
