@@ -5,6 +5,7 @@
     proxmox_api_host: "pvehost1"
     proxmox_api_user: "root@pam"
     proxmox_api_password: "SuperSecretPassword"
+    proxmox_api_port: "8006"
     boot_time: 180
     vm_list:
       - MyShinyVM

@@ -10,7 +10,7 @@
   uri:
     method: GET
     validate_certs: no
-    url: "https://{{ proxmox_api_host }}:8006/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/current"
+    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/current"
     headers: "{{ proxmox_api_cookie }}"
   register: vm_status
 
@@ -18,7 +18,7 @@
   uri:
     method: POST
     validate_certs: no
-    url: "https://{{ proxmox_api_host }}:8006/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/start"
+    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/start"
     headers: "{{ proxmox_api_cookie }}"
     body_format: form-urlencoded
     body:
@@ -58,7 +58,7 @@
   uri:
     method: POST
     validate_certs: no
-    url: "https://{{ proxmox_api_host }}:8006/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/shutdown"
+    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/shutdown"
     headers: "{{ proxmox_api_cookie }}"
     body_format: form-urlencoded
     body:
