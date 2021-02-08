@@ -1,5 +1,7 @@
 ---
 
+# Version 1.1.0
+
 - hosts: "localhost"
   vars:
     proxmox_api_host: "pvehost1"
@@ -8,7 +10,9 @@
     proxmox_api_port: "8006"
     boot_time: 180
     vm_list:
-      - MyShinyVM
+      - vm_name: myShinyVM1
+      - vm_name: myShinyVM2
+        snapshot: true
 
   tasks:
 

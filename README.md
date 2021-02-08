@@ -16,7 +16,7 @@ Playbook Variables
 - proxmox_api_host (Default pvehost1): Hostname of the Proxmox Server
 - proxmox_api_port: (Default 8006): Proxmox API Port (normally 8006)
 - boot_time: (Default 180): Sleep Time for VM to boot
-- vm_list: A List of VMs you want to patch. (Must be the same Name than in the Inventory File)
+- vm_list: A Dictionary of VMs you want to patch. (Must be the same Name than in the Inventory File). You can specify if a Snapshot should be taken after Patching is done. (see Examples in the Playbook)
 
 More Informations
 ------------
@@ -34,7 +34,11 @@ There is an example Playbook included update_proxmox_vm.yml
 
 An example Playbook Call looks like this. Ofcourse you may want to specify the Variables within your Playbook or within your Inventory:
 
-    - ansible-playbook -i hosts_example -e '{"vm_list": ["vm1", "vm2"], "proxmox_api_host": "srvoffice2.home.lab", "proxmox_api_password": "Evenmoresecret"}' update_proxmox_vm.yml  
+    - ansible-playbook -i hosts_example -e '{"proxmox_api_host": "srvoffice2.home.lab", "proxmox_api_password": "Evenmoresecret"}' update_proxmox_vm.yml  
+
+Maybe you want to specify the VM Dictionary in a separate File. Then you can call the Playbook like so:
+
+    - ansible-playbook -i hosts -e "@vm_list_to_patch.yml" -e '{"proxmox_api_host": "srvoffice2.home.lab", "proxmox_api_password": "Evenmoresecret"}' update_proxmox_vm/update_proxmox_vm.yml
 
 Author Information
 ------------------

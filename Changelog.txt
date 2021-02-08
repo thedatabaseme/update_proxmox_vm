@@ -1,0 +1,7 @@
+Changelog of Update Proxmox VM Playbook:
+
+Version 1.1.0
+  - New Feature: You now can specify it a snapshot of a VM should be taken after updating the VM. This can be done by using the snapshot Variable in the vm_list dictionary
+
+Version 1.0.0
+  - Initial Version
