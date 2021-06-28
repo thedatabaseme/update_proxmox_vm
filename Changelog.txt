@@ -2,6 +2,7 @@ Changelog of Update Proxmox VM Playbook:
 
 Version 1.2.0
   - Updating a VM is now handled within a Block. So when one VM fails (for whatever Reason), the Job will continue.
+  - When you take a Snapshot with this Automation. It is taken now before patching the VM. Not afterwards.
 
 Version 1.1.0
   - New Feature: You now can specify it a snapshot of a VM should be taken after updating the VM. This can be done by using the snapshot Variable in the vm_list dictionary
