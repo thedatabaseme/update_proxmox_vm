@@ -1,84 +1,90 @@
 ---
 
-- name: Extract Node and VM ID for VM {{ item.vm_name }}
-  set_fact:
-    vm_id: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='vmid') | first }}"
-    vm_node: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='node') | first }}"
+- name: Update VM
+  block:
 
+    - name: Extract Node and VM ID for VM {{ item.vm_name }}
+      set_fact:
+        vm_id: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='vmid') | first }}"
+        vm_node: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='node') | first }}"
+       
+    - name: Get VM Status
+      uri:
+        method: GET
+        validate_certs: no
+        url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/current"
+        headers: "{{ proxmox_api_cookie }}"
+      register: vm_status
+    
+    - name: Start VM {{ item.vm_name }}
+      uri:
+        method: POST
+        validate_certs: no
+        url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/start"
+        headers: "{{ proxmox_api_cookie }}"
+        body_format: form-urlencoded
+        body:
+          timeout: "{{ boot_time }}"
+      when: vm_status.json.data.status == 'stopped'
+    
+    - name: Waiting for the VM to boot up
+      pause: 
+        seconds: "{{ boot_time }}"
+      when: vm_status.json.data.status == 'stopped'
+    
+    - name: Gather VM Facts
+      gather_facts:
+      register: vm_facts
+      delegate_to: "{{ item.vm_name }}"
 
-- name: Get VM Status
-  uri:
-    method: GET
-    validate_certs: no
-    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/current"
-    headers: "{{ proxmox_api_cookie }}"
-  register: vm_status
+    - name: Take a VM Snapshot of VM {{ item.vm_name }}
+      uri:
+        method: POST
+        validate_certs: no
+        url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/snapshot"
+        headers: "{{ proxmox_api_cookie }}"
+        body_format: form-urlencoded
+        body:
+          snapname: "snap_before_patch-{{ ansible_date_time.date }}"
+          description: "Snapshot taken by Update Automation"
+          vmstate: 1
+      when: (item.snapshot|default(false))
+    
+    - name: Waiting for the VM to finish Snapshot
+      pause: 
+        seconds: "{{ boot_time }}"
+      when: (item.snapshot|default(false))
+    
+    - name: Update VM {{ item.vm_name }} with apt
+      apt:
+        force_apt_get: yes
+        name: "*"
+        state: latest
+        update_cache: yes
+      become: yes
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
+    
+    - name: Update VM {{ item.vm_name }} with yum
+      yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+      become: yes
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'  
+   
+    - name: Shutdown VM {{ item.vm_name }} when it was stopped before patching
+      uri:
+        method: POST
+        validate_certs: no
+        url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/shutdown"
+        headers: "{{ proxmox_api_cookie }}"
+        body_format: form-urlencoded
+        body:
+          forceStop: 1
+      when: vm_status.json.data.status == 'stopped'
 
-- name: Start VM {{ item.vm_name }}
-  uri:
-    method: POST
-    validate_certs: no
-    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/start"
-    headers: "{{ proxmox_api_cookie }}"
-    body_format: form-urlencoded
-    body:
-      timeout: "{{ boot_time }}"
-  when: vm_status.json.data.status == 'stopped'
-
-- name: Waiting for the VM to boot up
-  pause: 
-    seconds: "{{ boot_time }}"
-  when: vm_status.json.data.status == 'stopped'
-
-- name: Gather VM Facts
-  gather_facts:
-  register: vm_facts
-  delegate_to: "{{ item.vm_name }}"
-
-- name: Update VM {{ item.vm_name }} with apt
-  apt:
-    force_apt_get: yes
-    name: "*"
-    state: latest
-    update_cache: yes
-  become: yes
-  delegate_to: "{{ item.vm_name }}"
-  when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
-
-- name: Update VM {{ item.vm_name }} with yum
-  yum:
-    name: "*"
-    state: latest
-    update_cache: yes
-  become: yes
-  delegate_to: "{{ item.vm_name }}"
-  when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'
-
-- name: Take a VM Snapshot of VM {{ item.vm_name }}
-  uri:
-    method: POST
-    validate_certs: no
-    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/snapshot"
-    headers: "{{ proxmox_api_cookie }}"
-    body_format: form-urlencoded
-    body:
-      snapname: "snap_after_patch-{{ ansible_date_time.date }}"
-      description: "Snapshot taken by Update Automation"
-      vmstate: 1
-  when: (item.snapshot|default(false))
-
-- name: Waiting for the VM to finish Snapshot
-  pause: 
-    seconds: "{{ boot_time }}"
-  when: (item.snapshot|default(false))
-
-- name: Shutdown VM {{ item.vm_name }} when it was stopped before patching
-  uri:
-    method: POST
-    validate_certs: no
-    url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/qemu/{{ vm_id }}/status/shutdown"
-    headers: "{{ proxmox_api_cookie }}"
-    body_format: form-urlencoded
-    body:
-      forceStop: 1
-  when: vm_status.json.data.status == 'stopped'
+  rescue:
+    - debug:
+        msg: "There was an Error during Patch Installation on {{ item.vm_name }}. Maybe you misspelled the VM Name. Be aware, that Proxmox VM Names are case sensitive!" 
