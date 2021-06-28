@@ -36,26 +36,7 @@
       gather_facts:
       register: vm_facts
       delegate_to: "{{ item.vm_name }}"
-    
-    - name: Update VM {{ item.vm_name }} with apt
-      apt:
-        force_apt_get: yes
-        name: "*"
-        state: latest
-        update_cache: yes
-      become: yes
-      delegate_to: "{{ item.vm_name }}"
-      when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
-    
-    - name: Update VM {{ item.vm_name }} with yum
-      yum:
-        name: "*"
-        state: latest
-        update_cache: yes
-      become: yes
-      delegate_to: "{{ item.vm_name }}"
-      when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'
-    
+
     - name: Take a VM Snapshot of VM {{ item.vm_name }}
       uri:
         method: POST
@@ -74,6 +55,25 @@
         seconds: "{{ boot_time }}"
       when: (item.snapshot|default(false))
     
+    - name: Update VM {{ item.vm_name }} with apt
+      apt:
+        force_apt_get: yes
+        name: "*"
+        state: latest
+        update_cache: yes
+      become: yes
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
+    
+    - name: Update VM {{ item.vm_name }} with yum
+      yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+      become: yes
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'  
+   
     - name: Shutdown VM {{ item.vm_name }} when it was stopped before patching
       uri:
         method: POST
