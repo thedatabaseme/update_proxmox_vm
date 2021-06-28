@@ -85,4 +85,6 @@
           forceStop: 1
       when: vm_status.json.data.status == 'stopped'
 
-  ignore_errors: yes
+  rescue:
+    - debug:
+        msg: "I caught an error with {{ item.vm_name }}" 
