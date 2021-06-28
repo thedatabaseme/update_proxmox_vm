@@ -45,7 +45,7 @@
         headers: "{{ proxmox_api_cookie }}"
         body_format: form-urlencoded
         body:
-          snapname: "snap_after_patch-{{ ansible_date_time.date }}"
+          snapname: "snap_before_patch-{{ ansible_date_time.date }}"
           description: "Snapshot taken by Update Automation"
           vmstate: 1
       when: (item.snapshot|default(false))
