@@ -87,4 +87,4 @@
 
   rescue:
     - debug:
-        msg: "I caught an error with {{ item.vm_name }}" 
+        msg: "There was an Error during Patch Installation on {{ item.vm_name }}. Maybe you misspelled the VM Name. Be aware, that Proxmox VM Names are case sensitive!" 
