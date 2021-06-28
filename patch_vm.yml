@@ -84,3 +84,5 @@
         body:
           forceStop: 1
       when: vm_status.json.data.status == 'stopped'
+
+  ignore_errors: yes
