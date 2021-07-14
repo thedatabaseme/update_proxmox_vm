@@ -43,4 +43,4 @@ Maybe you want to specify the VM Dictionary in a separate File. Then you can cal
 Author Information
 ------------------
 
-This Role is created by P. Haberkern (theoracleme)
+This Role is created by P. Haberkern (thedatabaseme)
