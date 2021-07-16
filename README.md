@@ -6,7 +6,7 @@ This Playbook enables you to update / patch all your VMs on your Proxmox Cluster
 Requirements
 ------------
 
-- Ansible 2.7
+- Ansible 2.8
 
 Playbook Variables
 --------------
