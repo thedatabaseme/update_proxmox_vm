@@ -70,6 +70,7 @@
         name: "*"
         state: latest
         update_cache: yes
+        lock_timeouot: 120
       become: yes
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'  
