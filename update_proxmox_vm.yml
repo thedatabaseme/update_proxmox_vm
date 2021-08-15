@@ -1,6 +1,6 @@
 ---
 
-# Version 1.1.0
+# Version 1.3.0
 
 - hosts: "localhost"
   vars:
@@ -13,6 +13,7 @@
       - vm_name: myShinyVM1
       - vm_name: myShinyVM2
         snapshot: true
+        reboot_if_required: true
 
   tasks:
 
