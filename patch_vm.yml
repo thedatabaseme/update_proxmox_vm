@@ -61,7 +61,7 @@
         name: "*"
         state: latest
         update_cache: yes
-      become: yes
+      become: true
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
     
@@ -71,7 +71,7 @@
         state: latest
         update_cache: yes
         lock_timeout: 120
-      become: yes
+      become: true
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'  
    
@@ -85,6 +85,20 @@
         body:
           forceStop: 1
       when: vm_status.json.data.status == 'stopped'
+
+    - name: Check if a Reboot is required for Debian / Ubuntu
+      stat:
+        path: /var/run/reboot-required
+      become: true
+      register: reboot_required
+      delegate_to: "{{ item.vm_name }}"
+      when: (not vm_status.json.data.status == 'stopped') and (item.reboot_if_required|default(false)) and (vm_facts.ansible_facts.ansible_os_family == 'Debian')
+
+    - name: Reboot VM after Update
+      reboot:
+      become: true
+      delegate_to: "{{ item.vm_name }}"
+      when: (reboot_required.stat.exists|default(false))
 
   rescue:
     - debug:
