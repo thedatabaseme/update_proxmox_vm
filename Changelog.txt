@@ -1,5 +1,8 @@
 Changelog of Update Proxmox VM Playbook:
 
+Version 1.4.0
+  - OpenSuse / SLES Systems are now supported for patching it with this playbook
+
 Version 1.3.0
   - You can now specify if a VM should be rebooted after an Update / Patch installation if needed (Only works for Debian / Ubuntu atm)
 
