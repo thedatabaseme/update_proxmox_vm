@@ -77,15 +77,14 @@
 
     - name: Install Prerequisite Packages for OpenSuse / SLES
       package:
-        name: "{{ item }}"
+        name:
+          - python-xml
+          - zypper
+          - rpm
         state: present
       become: true
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'Suse'
-      loop:
-        - zypper
-        - python-xml
-        - rpm
 
     - name: Update VM {{ item.vm_name }} with zypper
       zypper:
