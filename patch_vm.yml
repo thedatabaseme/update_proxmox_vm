@@ -75,6 +75,18 @@
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'
 
+    - name: Install Prerequisite Packages for OpenSuse / SLES
+      package:
+        name: "{{ item }}"
+        state: present
+      become: true
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'Suse'
+      loop:
+        - zypper
+        - python-xml
+        - rpm
+
     - name: Update VM {{ item.vm_name }} with zypper
       zypper:
         name: "*"
@@ -83,7 +95,7 @@
         type: patch
       become: true
       delegate_to: "{{ item.vm_name }}"
-      when: vm_facts.ansible_facts.ansible_os_family == 'Suse'  
+      when: vm_facts.ansible_facts.ansible_os_family == 'Suse'
    
     - name: Shutdown VM {{ item.vm_name }} when it was stopped before patching
       uri:
