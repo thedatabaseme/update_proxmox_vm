@@ -73,7 +73,17 @@
         lock_timeout: 120
       become: true
       delegate_to: "{{ item.vm_name }}"
-      when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'  
+      when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'
+
+    - name: Update VM {{ item.vm_name }} with zypper
+      zypper:
+        name: "*"
+        state: latest
+        update_cache: yes
+        type: patch
+      become: true
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'Suse'  
    
     - name: Shutdown VM {{ item.vm_name }} when it was stopped before patching
       uri:
