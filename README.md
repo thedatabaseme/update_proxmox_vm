@@ -26,7 +26,7 @@ Playbook Variables
         snapshot: true
         reboot_if_required: true
 
-More Informations
+More Information
 ------------
 
 Be aware, that this role will run at the localhost (Ansible Controlhost) by default. All Proxmox Tasks will be made by REST API to the Proxmox Server.
