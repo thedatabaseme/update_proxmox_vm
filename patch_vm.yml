@@ -4,23 +4,23 @@
   block:
 
     - name: Extract Node and VM ID for VM {{ item.vm_name }}
-      set_fact:
+      ansible.builtin.set_fact:
         vm_id: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='vmid') | first }}"
         vm_node: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='node') | first }}"
         vm_type: "{{ proxmox_cluster_information.json.data | selectattr('name', 'equalto', item.vm_name) | map(attribute='type') | first }}"
-       
+
     - name: Get VM Status
-      uri:
+      ansible.builtin.uri:
         method: GET
-        validate_certs: no
+        validate_certs: false
         url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/{{ vm_type }}/{{ vm_id }}/status/current"
         headers: "{{ proxmox_api_cookie }}"
       register: vm_status
 
     - name: Start qemu VM {{ item.vm_name }}
-      uri:
+      ansible.builtin.uri:
         method: POST
-        validate_certs: no
+        validate_certs: false
         url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/{{ vm_type }}/{{ vm_id }}/status/start"
         headers: "{{ proxmox_api_cookie }}"
         body_format: form-urlencoded
@@ -29,28 +29,28 @@
       when: vm_status.json.data.status == 'stopped' and vm_type == 'qemu'
 
     - name: Start lxc VM {{ item.vm_name }}
-      uri:
+      ansible.builtin.uri:
         method: POST
-        validate_certs: no
+        validate_certs: false
         url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/{{ vm_type }}/{{ vm_id }}/status/start"
         headers: "{{ proxmox_api_cookie }}"
         body_format: form-urlencoded
       when: vm_status.json.data.status == 'stopped' and vm_type == 'lxc'
 
     - name: Waiting for the VM to boot up
-      pause: 
+      ansible.builtin.pause:
         seconds: "{{ boot_time }}"
       when: vm_status.json.data.status == 'stopped'
-    
+
     - name: Gather VM Facts
-      gather_facts:
+      ansible.builtin.gather_facts:
       register: vm_facts
       delegate_to: "{{ item.vm_name }}"
 
     - name: Take a VM Snapshot of qemu VM {{ item.vm_name }}
-      uri:
+      ansible.builtin.uri:
         method: POST
-        validate_certs: no
+        validate_certs: false
         url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/{{ vm_type }}/{{ vm_id }}/snapshot"
         headers: "{{ proxmox_api_cookie }}"
         body_format: form-urlencoded
@@ -59,11 +59,11 @@
           description: "Snapshot taken by Update Automation"
           vmstate: 1
       when: (item.snapshot|default(false)) and vm_type == 'qemu'
-    
+
     - name: Take a VM Snapshot of lxc VM {{ item.vm_name }}
-      uri:
+      ansible.builtin.uri:
         method: POST
-        validate_certs: no
+        validate_certs: false
         url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/{{ vm_type }}/{{ vm_id }}/snapshot"
         headers: "{{ proxmox_api_cookie }}"
         body_format: form-urlencoded
@@ -73,32 +73,32 @@
       when: (item.snapshot|default(false)) and vm_type == 'lxc'
 
     - name: Waiting for the VM to finish Snapshot
-      pause: 
+      ansible.builtin.pause:
         seconds: "{{ boot_time }}"
       when: (item.snapshot|default(false))
-    
+
     - name: Update VM {{ item.vm_name }} with apt
-      apt:
-        force_apt_get: yes
+      ansible.builtin.apt:
+        force_apt_get: true
         name: "*"
         state: latest
-        update_cache: yes
+        update_cache: true
       become: true
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
-    
+
     - name: Update VM {{ item.vm_name }} with yum
-      yum:
+      ansible.builtin.yum:
         name: "*"
         state: latest
-        update_cache: yes
+        update_cache: true
         lock_timeout: 120
       become: true
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'RedHat'
 
     - name: Install Prerequisite Packages for OpenSuse / SLES
-      package:
+      ansible.builtin.package:
         name:
           - python-xml
           - zypper
@@ -109,19 +109,19 @@
       when: vm_facts.ansible_facts.ansible_os_family == 'Suse'
 
     - name: Update VM {{ item.vm_name }} with zypper
-      zypper:
+      community.general.zypper:
         name: "*"
         state: latest
-        update_cache: yes
+        update_cache: true
         type: patch
       become: true
       delegate_to: "{{ item.vm_name }}"
       when: vm_facts.ansible_facts.ansible_os_family == 'Suse'
-   
+
     - name: Shutdown VM {{ item.vm_name }} when it was stopped before patching
-      uri:
+      ansible.builtin.uri:
         method: POST
-        validate_certs: no
+        validate_certs: false
         url: "https://{{ proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ vm_node }}/{{ vm_type }}/{{ vm_id }}/status/shutdown"
         headers: "{{ proxmox_api_cookie }}"
         body_format: form-urlencoded
@@ -130,19 +130,24 @@
       when: vm_status.json.data.status == 'stopped'
 
     - name: Check if a Reboot is required for Debian / Ubuntu
-      stat:
+      ansible.builtin.stat:
         path: /var/run/reboot-required
       become: true
       register: reboot_required
       delegate_to: "{{ item.vm_name }}"
-      when: (not vm_status.json.data.status == 'stopped') and (item.reboot_if_required|default(false)) and (vm_facts.ansible_facts.ansible_os_family == 'Debian')
+      when:
+        - (not vm_status.json.data.status == 'stopped')
+        - (item.reboot_if_required|default(false))
+        - (vm_facts.ansible_facts.ansible_os_family == 'Debian')
 
     - name: Reboot VM after Update
-      reboot:
+      ansible.builtin.reboot:
       become: true
       delegate_to: "{{ item.vm_name }}"
       when: (reboot_required.stat.exists|default(false))
 
   rescue:
-    - debug:
-        msg: "There was an Error during Patch Installation on {{ item.vm_name }}. Maybe you misspelled the VM Name. Be aware, that Proxmox VM Names are case sensitive!" 
+    - ansible.builtin.debug:
+        msg:
+          - "There was an Error during Patch Installation on {{ item.vm_name }}."
+          - "Maybe you misspelled the VM Name. Be aware, that Proxmox VM Names are case sensitive!"

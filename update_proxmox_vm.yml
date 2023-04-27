@@ -18,10 +18,10 @@
   tasks:
 
   - name: Logon to Proxmox Server
-    uri:
+    ansible.builtin.uri:
       method: POST
-      validate_certs: no
-      return_content: yes
+      validate_certs: false
+      return_content: true
       url: "https://{{ proxmox_api_host }}:8006/api2/json/access/ticket"
       body_format: json
       body:
@@ -31,20 +31,20 @@
     become: false
 
   - name: parse cookie data
-    set_fact:
+    ansible.builtin.set_fact:
       proxmox_api_cookie:
         Cookie: "PVEAuthCookie={{ proxmox_session.json.data.ticket }}"
         CSRFPreventionToken: "{{ proxmox_session.json.data.CSRFPreventionToken }}"
     no_log: true
 
   - name: get information about all vms in the cluster
-    uri:
+    ansible.builtin.uri:
       method: GET
-      validate_certs: no
+      validate_certs: false
       url: "https://{{ proxmox_api_host }}:8006/api2/json/cluster/resources?type=vm"
       headers: "{{ proxmox_api_cookie }}"
     register: proxmox_cluster_information
 
   - name: Patch VM
-    include_tasks: patch_vm.yml
+    ansible.builtin.include_tasks: patch_vm.yml
     loop: "{{ vm_list }}"
