@@ -89,8 +89,6 @@
 
     - name: Dist Upgrade VM {{ item.vm_name }} with apt
       ansible.builtin.apt:
-        force_apt_get: true
-        name: "*"
         upgrade: dist
         update_cache: true
       become: true
