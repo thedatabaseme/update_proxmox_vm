@@ -1,5 +1,17 @@
 Changelog of Update Proxmox VM Playbook:
 
+Version 1.7.0
+  - Added dist_upgrade variable to control for dist-upgrade option during apt
+
+Version 1.6.1
+  - Added collection requirements for community.general
+
+Version 1.6.0
+  - fixed linting errors and specified fqdn module names
+
+Version 1.5.0
+  - Added LXC support
+
 Version 1.4.0
   - OpenSuse / SLES Systems are now supported for patching it with this playbook
 

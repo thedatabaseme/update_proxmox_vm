@@ -85,7 +85,17 @@
         update_cache: true
       become: true
       delegate_to: "{{ item.vm_name }}"
-      when: vm_facts.ansible_facts.ansible_os_family == 'Debian'
+      when: vm_facts.ansible_facts.ansible_os_family == 'Debian' and not (dist_upgrade|default(false))
+
+    - name: Dist Upgrade VM {{ item.vm_name }} with apt
+      ansible.builtin.apt:
+        force_apt_get: true
+        name: "*"
+        upgrade: dist
+        update_cache: true
+      become: true
+      delegate_to: "{{ item.vm_name }}"
+      when: vm_facts.ansible_facts.ansible_os_family == 'Debian' and (dist_upgrade|default(false))
 
     - name: Update VM {{ item.vm_name }} with yum
       ansible.builtin.yum:

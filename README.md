@@ -16,6 +16,7 @@ Playbook Variables
 - proxmox_api_host (Default pvehost1): Hostname of the Proxmox Server
 - proxmox_api_port: (Default 8006): Proxmox API Port (normally 8006)
 - boot_time: (Default 180): Sleep Time for VM to boot
+- dist_upgrade: (Default false): Controls if apt dist-upgrade operation should be done or not
 - vm_list: A Dictionary of VMs you want to patch. (Must be the same Name than in the Inventory File). You can specify if a Snapshot should be taken after Patching is done. (snapshot: true; see Examples in the Playbook) Also you can specify, if you want to reboot the VM after an Update if needed (working only for Ubuntu / Debian Systems) by specifying the reboot_if_required: true Variable (see Examples in the Playbook)
 
   Example VM List:
